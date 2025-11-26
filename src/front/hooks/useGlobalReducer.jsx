@@ -1,24 +1,41 @@
-// Import necessary hooks and functions from React.
+// ===============================
+// useGlobalReducer.js
+// ===============================
+
+// React tools
 import { useContext, useReducer, createContext } from "react";
-import storeReducer, { initialStore } from "../store"  // Import the reducer and the initial state.
 
-// Create a context to hold the global state of the application
-// We will call this global state the "store" to avoid confusion while using local states
-const StoreContext = createContext()
+// Store + Reducer
+import storeReducer, { initialStore } from "../store";
 
-// Define a provider component that encapsulates the store and warps it in a context provider to 
-// broadcast the information throught all the app pages and components.
+// Create Global Context
+const StoreContext = createContext(null);
+
+// ===============================
+// PROVIDER
+// ===============================
 export function StoreProvider({ children }) {
-    // Initialize reducer with the initial state.
-    const [store, dispatch] = useReducer(storeReducer, initialStore())
-    // Provide the store and dispatch method to all child components.
-    return <StoreContext.Provider value={{ store, dispatch }}>
-        {children}
+  // Initialize the reducer
+  const [store, dispatch] = useReducer(storeReducer, initialStore());
+
+  return (
+    <StoreContext.Provider value={{ store, dispatch }}>
+      {children}
     </StoreContext.Provider>
+  );
 }
 
-// Custom hook to access the global state and dispatch function.
+// ===============================
+// HOOK
+// ===============================
 export default function useGlobalReducer() {
-    const { dispatch, store } = useContext(StoreContext)
-    return { dispatch, store };
+  const context = useContext(StoreContext);
+
+  if (!context) {
+    throw new Error(
+      "useGlobalReducer must be used inside <StoreProvider />"
+    );
+  }
+
+  return context; // { store, dispatch }
 }
