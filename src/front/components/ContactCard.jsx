@@ -1,52 +1,40 @@
-import React from "react";
+import { useContext } from "react";
 import { Link } from "react-router-dom";
+import { ContactContext } from "../store/ContactContext";
 
-// funciones separadas
-function Avatar({ img }) {
-return (
-<img
-src={img}
-alt="avatar"
-className="rounded-circle me-3"
-width="80"
-/>
-);
-}
+export default function ContactCard({ contact }) {
+  const { deleteContact } = useContext(ContactContext);
 
-function ContactInfo({ full_name, address, phone, email }) {
-return (
-<div>
-<h5>{full_name}</h5>
-<p className="mb-0"> {address}</p>
-<p className="mb-0"> {phone}</p>
-<p className="mb-0"> {email}</p>
-</div>
-);
-}
+  return (
+    <div className="card p-3 mb-3 d-flex flex-row align-items-center">
+      <img
+        src="https://i.pravatar.cc/80"
+        className="rounded-circle me-3"
+        alt="avatar"
+      />
 
-function ContactActions({ id, onDelete }) {
-return (
-<div>
-<Link to={`/edit/${id}`} className="btn btn-outline-primary me-2">✏️</Link>
-<button onClick={() => onDelete(id)} className="btn btn-outline-danger">🗑️</button>
-</div>
-);
-}
+      <div className="flex-grow-1">
+        <h5>{contact.full_name}</h5>
+        <p>{contact.address}</p>
+        <p>{contact.phone}</p>
+        <p>{contact.email}</p>
+      </div>
 
-export default function ContactCard({ contact, onDelete }) {
-return (
-<div className="card mb-3 p-3 d-flex flex-row align-items-center justify-content-between">
-<div className="d-flex align-items-center">
-<Avatar img="https://i.pravatar.cc/150?img=3" />
-<ContactInfo
-full_name={contact.full_name}
-address={contact.address}
-phone={contact.phone}
-email={contact.email}
-/>
-</div>
+      <div>
+        <Link to={`/edit/${contact.id}`} className="btn btn-outline-warning me-2">
+          
+        </Link>
 
-<ContactActions id={contact.id} onDelete={onDelete} />
-</div>
-);
+        <button
+          className="btn btn-outline-danger"
+          onClick={() => {
+            if (confirm("Do you want to delete this contact?"))
+              deleteContact(contact.id);
+          }}
+        >
+          
+        </button>
+      </div>
+    </div>
+  );
 }

@@ -1,43 +1,78 @@
 
-import { useGlobalReducer } from "../store/appContext";
+
+import { useContext, useEffect, useState } from "react";
+import { ContactContext } from "../store/ContactContext";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function AddContact() {
-  const { store, dispatch } = useGlobalReducer();
+  const { contacts, createContact, updateContact } = useContext(ContactContext);
+  const navigate = useNavigate();
+  const { id } = useParams();
 
-  const loadContacts = async () => {
-    try {
-      const backendUrl = "https://playground.4geeks.com/contact";
+  const editing = Boolean(id);
+  const [form, setForm] = useState({
+    full_name: "",
+    email: "",
+    address: "",
+    phone: "",
+  });
 
-      if (!backendUrl) {
-        throw new Error("VITE_BACKEND_URL is not defined in .env file");
-      }
-
-      const response = await fetch(backendUrl + "/agendas");
-      const data = await response.json();
-
-      if (response.ok) {
-        dispatch({
-          type: "add_contact",
-          payload: data.agendas,
-        });
-      }
-
-      return data;
-    } catch (error) {
-      throw new Error(
-        `Could not fetch the contacts.
-        Please check if the backend is running and the backend port is public.`
-      );
+  useEffect(() => {
+    if (editing) {
+      const contact = contacts.find((c) => c.id === parseInt(id));
+      if (contact) setForm(contact);
     }
+  }, [id, contacts]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (editing) {
+      await updateContact(id, form);
+    } else {
+      await createContact(form);
+    }
+
+    navigate("/");
   };
 
-  
-   useEffect(() => { loadContacts(); }, []);
-
   return (
-    <div>
-      <h1>Add Contact</h1>
-      {/* aquí va tu formulario o UI */}
+    <div className="container">
+      <h2>{editing ? "Edit contact" : "Add a new contact"}</h2>
+
+      <form onSubmit={handleSubmit}>
+        <input
+          className="form-control mb-2"
+          value={form.full_name}
+          placeholder="Full Name"
+          onChange={(e) => setForm({ ...form, full_name: e.target.value })}
+        />
+        <input
+          className="form-control mb-2"
+          value={form.email}
+          placeholder="Email"
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+        />
+        <input
+          className="form-control mb-2"
+          value={form.phone}
+          placeholder="Phone"
+          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+        />
+        <input
+          className="form-control mb-2"
+          value={form.address}
+          placeholder="Address"
+          onChange={(e) => setForm({ ...form, address: e.target.value })}
+        />
+
+        <button className="btn btn-primary w-100">Save</button>
+      </form>
+
+      <button className="btn btn-link mt-3" onClick={() => navigate("/")}>
+        or go back to contacts
+      </button>
     </div>
   );
 }
+

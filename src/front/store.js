@@ -1,85 +1,60 @@
-// ==========================
-// INITIAL STORE
-// ==========================
-export const initialStore = () => {
-  return {
-    message: null,
-    todos: [
-      {
-        id: 1,
-        title: "Make the bed",
-        background: null,
-      },
-      {
-        id: 2,
-        title: "Do my homework",
-        background: null,
-      },
-    ],
+import { createContext, useEffect, useState, createElement } from "react";
 
-    // Añadido para gestionar contactos
-    contacts: [],
+export const ContactContext = createContext();
+
+const API_URL = "https://playground.4geeks.com/contact";
+
+export function ContactProvider({ children }) {
+  const [contacts, setContacts] = useState([]);
+
+  // READ
+  const loadContacts = async () => {
+    const res = await fetch(`${API_URL}`);
+    const data = await res.json();
+    setContacts(data);
   };
-};
 
-// ==========================
-// REDUCER
-// ==========================
-export default function storeReducer(store, action = {}) {
-  switch (action.type) {
-    // Manejo de mensaje de prueba
-    case "set_hello":
-      return {
-        ...store,
-        message: action.payload,
-      };
+  // CREATE
+  const createContact = async (contact) => {
+    await fetch(`${API_URL}`, {
+      method: "POST",
+      body: JSON.stringify(contact),
+      headers: { "Content-Type": "application/json" },
+    });
+    loadContacts();
+  };
 
-    // Actualizar color de un todo (tu código original)
-    case "add_task":
-      const { id, color } = action.payload;
+  // UPDATE
+  const updateContact = async (id, contact) => {
+    await fetch(`${API_URL}/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(contact),
+      headers: { "Content-Type": "application/json" },
+    });
+    loadContacts();
+  };
 
-      return {
-        ...store,
-        todos: store.todos.map((todo) =>
-          todo.id === id ? { ...todo, background: color } : todo
-        ),
-      };
+  // DELETE
+  const deleteContact = async (id) => {
+    await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+    loadContacts();
+  };
 
-    // ==========================
-    // CONTACT ACTIONS
-    // ==========================
+  useEffect(() => {
+    loadContacts();
+  }, []);
 
-    // Guarda la lista completa de contactos desde el backend
-    case "set_contacts":
-      return {
-        ...store,
-        contacts: action.payload,
-      };
-
-    // Agregar un contacto nuevo
-    case "add_contact":
-      return {
-        ...store,
-        contacts: [...store.contacts, action.payload],
-      };
-
-    // Editar contacto
-    case "update_contact":
-      return {
-        ...store,
-        contacts: store.contacts.map((c) =>
-          c.id === action.payload.id ? action.payload : c
-        ),
-      };
-
-    // Eliminar contacto
-    case "delete_contact":
-      return {
-        ...store,
-        contacts: store.contacts.filter((c) => c.id !== action.payload),
-      };
-
-    default:
-      throw Error(" No encontrada la action.");
-  }
+  return createElement(
+    ContactContext.Provider,
+    {
+      value: {
+        contacts,
+        createContact,
+        updateContact,
+        deleteContact,
+      },
+    },
+    children
+  );
 }
+
