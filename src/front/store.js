@@ -1,60 +1,34 @@
-import { createContext, useEffect, useState, createElement } from "react";
-
-export const ContactContext = createContext();
-
-const API_URL = "https://playground.4geeks.com/contact";
-
-export function ContactProvider({ children }) {
-  const [contacts, setContacts] = useState([]);
-
-  // READ
-  const loadContacts = async () => {
-    const res = await fetch(`${API_URL}`);
-    const data = await res.json();
-    setContacts(data);
-  };
-
-  // CREATE
-  const createContact = async (contact) => {
-    await fetch(`${API_URL}`, {
-      method: "POST",
-      body: JSON.stringify(contact),
-      headers: { "Content-Type": "application/json" },
-    });
-    loadContacts();
-  };
-
-  // UPDATE
-  const updateContact = async (id, contact) => {
-    await fetch(`${API_URL}/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(contact),
-      headers: { "Content-Type": "application/json" },
-    });
-    loadContacts();
-  };
-
-  // DELETE
-  const deleteContact = async (id) => {
-    await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-    loadContacts();
-  };
-
-  useEffect(() => {
-    loadContacts();
-  }, []);
-
-  return createElement(
-    ContactContext.Provider,
-    {
-      value: {
-        contacts,
-        createContact,
-        updateContact,
-        deleteContact,
+export const initialStore=()=>{
+  return{
+    message: null,
+    currentCharacter:{},
+    todos: [
+      {
+        id: 1,
+        title: "Make the bed",
+        background: null,
       },
-    },
-    children
-  );
+      {
+        id: 2,
+        title: "Do my homework",
+        background: null,
+      }
+    ]
+  }
 }
-
+export default function storeReducer(store, action = {}) {
+  switch(action.type){
+    case 'character_details':
+      return{...store, currentCharacter: action.payload}
+    case 'set_hello':
+      return {...store,message: action.payload};
+    case 'add_task':
+      const { id,  color } = action.payload
+      return {
+        ...store,
+        todos: store.todos.map((todo) => (todo.id === id ? { ...todo, background: color } : todo))
+      };
+    default:
+      throw Error('Unknown action.');
+  }
+}
