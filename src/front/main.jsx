@@ -5,7 +5,11 @@ import { RouterProvider } from "react-router-dom";  // Import RouterProvider to 
 import { router } from "./routes";  // Import the router configuration
 import { StoreProvider } from './hooks/useGlobalReducer';  // Import the StoreProvider for global state management
 import { BackendURL } from './components/BackendURL';
-
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Contact from "./pages/Contact";
+import AddContact from "./pages/AddContact";
+import { ContactProvider } from './store/ContactContext';
+import AddAgenda from './components/AddAgendas';
 const Main = () => {
     
     if(! import.meta.env.VITE_BACKEND_URL ||  import.meta.env.VITE_BACKEND_URL == "") return (
@@ -14,13 +18,18 @@ const Main = () => {
         </React.StrictMode>
         );
     return (
-        <React.StrictMode>  
-            {/* Provide global state to all components */}
-            <StoreProvider> 
-                {/* Set up routing for the application */} 
-                <RouterProvider router={router}>
-                </RouterProvider>
-            </StoreProvider>
+        <React.StrictMode>
+            <ContactProvider>
+                <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Contact />} />
+              <Route path="/add" element={<AddContact />} />
+              <Route path="/edit/:id" element={<AddContact />} />
+              <Route path="/addagendas" element={<AddAgenda />} />
+
+            </Routes>
+          </BrowserRouter>
+            </ContactProvider>
         </React.StrictMode>
     );
 }
